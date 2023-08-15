@@ -15,9 +15,9 @@ class URL {
 
 	public function __get(string $name) {
 		return match ($name) {
-			'host' => $this->hostname . ':' . $this->port,
+			'host' => $this->hostname . ($this->port ? ':' . $this->port : ''),
 			'origin' => $this->protocol . '://' . $this->host,
-			'search' => $this->searchParams->toString(),
+			'search' => $this->searchParams->toString() ?: null,
 			'href' => $this->toString(),
 			default => null,
 		};
@@ -73,17 +73,13 @@ class URL {
 			$out .= implode(':', $auth) . '@';
 		}
 
-		$out .= $this->host ?? '';
-
-		if ($this->port) {
-			$out .= ':' . $this->port;
-		}
+		$out .= $this->host;
 
 		$out .= $this->pathname ?? '';
 
-		$searchParams = $this->searchParams->toString();
-		if ($searchParams) {
-			$out .= '?' . $searchParams;
+		$search = $this->search;
+		if ($search) {
+			$out .= '?' . $search;
 		}
 
 		if ($this->hash) {
