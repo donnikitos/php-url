@@ -6,6 +6,13 @@ class URLSearchParams {
 		parse_str($query, $this->data);
 	}
 
+	public function __get(string $name) {
+		return match ($name) {
+			'size' => count($this->values()),
+			default => null,
+		};
+	}
+
 	public function append(string $name, string | int | bool $value) {
 		if (isset($this->data[$name])) {
 			if (is_array($this->data[$name])) {

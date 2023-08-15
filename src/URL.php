@@ -1,19 +1,48 @@
 <?php
 class URL {
-	public $hash = null;
-	public $host = null;
-	public $hostname = null;
-	public $href = null;
-	public $origin = null;
-	public $password = null;
-	public $pathname = null;
-	public $port = null;
 	public $protocol = null;
-	public $search = null;
-	public $searchParams = null;
 	public $username = null;
+	public $password = null;
+	public $hostname = null;
+	public $port = null;
+	public $pathname = null;
+	public $searchParams = null;
+	public $hash = null;
 
 	public function __construct(null | string $url) {
+		$this->parse($url);
+	}
+
+	public function __get(string $name) {
+		return match ($name) {
+			'host' => $this->hostname . ':' . $this->port,
+			'origin' => $this->protocol . '://' . $this->host,
+			'search' => $this->searchParams->toString(),
+			'href' => $this->toString(),
+			default => null,
+		};
+	}
+
+	public function __set(string $name, string $value) {
+		if ($name === 'host') {
+			$parsed = parse_url($value);
+
+			$this->hostname = $parsed['host'];
+			$this->port = $parsed['port'];
+		} elseif ($name === 'origin') {
+			$parsed = parse_url($value);
+
+			$this->protocol = $parsed['scheme'];
+			$this->hostname = $parsed['host'];
+			$this->port = $parsed['port'];
+		} elseif ($name === 'search') {
+			$this->searchParams = new URLSearchParams($value);
+		} elseif ($name === 'href') {
+			$this->parse($value);
+		}
+	}
+
+	private function parse(string $url) {
 		$parsed = parse_url($url);
 
 		$this->protocol = $parsed['scheme'];
@@ -21,10 +50,6 @@ class URL {
 		$this->password = $parsed['pass'];
 		$this->hostname = $parsed['host'];
 		$this->port = $parsed['port'];
-		$this->host = $this->hostname;
-		if ($this->port) {
-			$this->host .= ':' . $this->port;
-		}
 		$this->pathname = $parsed['path'];
 		$this->hash = $parsed['fragment'];
 		$this->searchParams = new URLSearchParams($parsed['query']);
